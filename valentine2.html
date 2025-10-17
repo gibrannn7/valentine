@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>valentine</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        background-color: #4a0404;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        font-family: "Georgia", serif;
+      }
+
+      .container {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      
+      /* === PERBAIKAN CSS AUDIO CONTROLS DIMULAI DI SINI === */
+      .audio-control {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        z-index: 1000;
+      }
+
+      .speaker-icon {
+        width: 35px;
+        height: 35px;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+
+      .speaker-icon:hover {
+        transform: scale(1.1);
+      }
+      
+      .audio-hover-area {
+        position: relative;
+        display: flex; /* Menggunakan flexbox untuk penataan */
+        align-items: center; /* Membuat item di dalamnya sejajar vertikal */
+      }
+
+      .audio-slider-container {
+        position: absolute;
+        left: 50px; /* Jarak slider dari ikon speaker */
+        top: 50%;
+        transform: translateY(-50%); /* Trik agar slider pas di tengah vertikal */
+        background: transparent;
+        border-radius: 10px;
+        display: none;
+        width: 100px;
+      }
+      
+      .audio-hover-area:hover .audio-slider-container {
+        display: block;
+      }
+      /* === PERBAIKAN CSS AUDIO CONTROLS SELESAI === */
+
+
+      .volume-slider {
+        width: 100%;
+        height: 3px;
+        cursor: pointer;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 3px;
+      }
+
+      .volume-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .volume-slider::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+
+      .floating-heart {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        pointer-events: none;
+        filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.5));
+        opacity: 0.8;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) scale(1) rotate(0deg);
+          filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+        }
+        50% {
+          filter: drop-shadow(0 0 20px rgba(255, 0, 0, 1));
+        }
+        100% {
+          transform: translateY(-280px) scale(1) rotate(360deg);
+          filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+        }
+      }
+
+      .message-container {
+        position: relative;
+        color: white;
+        font-size: 3rem;
+        text-align: center;
+        white-space: pre-line;
+        opacity: 1;
+        width: 80%;
+        max-width: 600px;
+        pointer-events: none;
+        padding: 20px;
+        overflow: hidden;
+        word-wrap: break-word;
+      }
+
+      .message-text {
+        display: inline-block;
+        opacity: 0;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .border-container {
+        position: relative;
+        width: 90%;
+        max-width: 600px;
+        height: auto;
+        padding: 20px;
+        background-image: url("images/border.jpg");
+        background-size: cover;
+        background-position: center;
+        border-radius: 10px;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .border-container.visible {
+        display: flex;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="audio-control">
+        <div class="audio-hover-area">
+          <img
+            src="assets/speaker.svg"
+            class="speaker-icon"
+            id="speaker-icon"
+            alt="Speaker"
+          />
+          <div class="audio-slider-container">
+            <input
+              type="range"
+              class="volume-slider"
+              id="volume-slider"
+              min="0"
+              max="100"
+              value="100"
+            />
+          </div>
+        </div>
+      </div>
+
+      <audio id="background-music" loop>
+        <source src="assets/valentine3.mp3" type="audio/mp3" />
+      </audio>
+
+      <div class="border-container" id="border-container">
+        <div class="slide-container">
+          <div class="slide active">
+            <img src="assets/image1.jpg" alt="Image 1" />
+          </div>
+          <div class="slide">
+            <img src="assets/image2.jpg" alt="Image 2" />
+          </div>
+          <div class="slide">
+            <img src="assets/image3.jpg" alt="Image 3" />
+          </div>
+        </div>
+        <button class="next-button" id="next-button">Next</button>
+      </div>
+
+      <div class="message-container" id="message-container">
+        <span class="message-text" id="message-text"
+          >Thank you for being my Valentine! 💖</span
+        >
+        <span class="typing-cursor"></span>
+      </div>
+    </div>
+
+    <script>
+      function typeMessage() {
+        const messageElement = document.getElementById("message-text");
+        const text = messageElement.textContent;
+        messageElement.textContent = "";
+        messageElement.style.opacity = 1;
+
+        const characters = text.split("");
+        const tl = gsap.timeline();
+
+        characters.forEach((char, index) => {
+          const charSpan = document.createElement("span");
+          charSpan.textContent = char;
+          charSpan.style.opacity = 0;
+          messageElement.appendChild(charSpan);
+
+          tl.to(
+            charSpan,
+            {
+              opacity: 1,
+              duration: 0.1,
+              ease: "none",
+            },
+            index * 0.1
+          );
+        });
+
+        tl.play();
+      }
+
+      window.addEventListener("load", () => {
+        setTimeout(typeMessage, 1000);
+      });
+
+      const audio = document.getElementById("background-music");
+      const speakerIcon = document.getElementById("speaker-icon");
+      const volumeSlider = document.getElementById("volume-slider");
+      let isPlaying = true;
+
+      window.addEventListener("load", () => {
+        audio.play().catch((error) => {
+          console.log("Audio autoplay failed:", error);
+        });
+      });
+
+      speakerIcon.addEventListener("click", () => {
+        if (isPlaying) {
+          audio.pause();
+          speakerIcon.src = "assets/speaker-cross.svg";
+          volumeSlider.value = 0;
+        } else {
+          audio.play();
+          speakerIcon.src = "assets/speaker.svg";
+          volumeSlider.value = 100;
+          audio.volume = 1;
+        }
+        isPlaying = !isPlaying;
+      });
+
+      volumeSlider.addEventListener("input", (e) => {
+        const value = e.target.value;
+        audio.volume = value / 100;
+
+        if (value == 0) {
+          speakerIcon.src = "assets/speaker-cross.svg";
+          isPlaying = false;
+          audio.pause();
+        } else {
+          speakerIcon.src = "assets/speaker.svg";
+          isPlaying = true;
+          audio.play();
+        }
+      });
+
+      function createFloatingHearts() {
+        const numberOfHearts = 20;
+        const container = document.querySelector(".container");
+
+        for (let i = 0; i < numberOfHearts; i++) {
+          const heart = document.createElement("img");
+          heart.src = "assets/heart.svg";
+          heart.classList.add("floating-heart");
+          heart.style.left = `${Math.random() * 100}vw`;
+          const duration = 10 + Math.random() * 10;
+          heart.style.animation = `float ${duration}s linear infinite`;
+          heart.style.animationDelay = `${Math.random() * 10}s`;
+          container.appendChild(heart);
+        }
+      }
+
+      const messageContainer = document.getElementById("message-container");
+      setTimeout(() => {
+        messageContainer.classList.add("visible");
+      }, 1000);
+
+      const borderContainer = document.getElementById("border-container");
+      const nextButton = document.getElementById("next-button");
+      const slides = document.querySelectorAll(".slide");
+      let currentSlide = 0;
+
+      nextButton.addEventListener("click", () => {
+        slides[currentSlide].classList.remove("active");
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add("active");
+      });
+
+      createFloatingHearts();
+    </script>
+  </body>
+</html>

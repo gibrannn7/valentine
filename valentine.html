@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Valentine's Card</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        background-color: #4a0404;
+        display: flex;
+        justify-content: center;
+        overflow: hidden;
+        align-items: center;
+        overflow: hidden;
+        font-family: serif;
+      }
+
+      .container {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      
+      /* === PERBAIKAN CSS AUDIO CONTROLS DIMULAI DI SINI === */
+      .audio-control {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        z-index: 1000;
+      }
+
+      .speaker-icon {
+        width: 35px;
+        height: 35px;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+
+      .speaker-icon:hover {
+        transform: scale(1.1);
+      }
+      
+      .audio-hover-area {
+        position: relative;
+        display: flex; /* Menggunakan flexbox untuk penataan */
+        align-items: center; /* Membuat item di dalamnya sejajar vertikal */
+      }
+
+      .audio-slider-container {
+        position: absolute;
+        left: 50px; /* Jarak slider dari ikon speaker */
+        top: 50%;
+        transform: translateY(-50%); /* Trik agar slider pas di tengah vertikal */
+        background: transparent;
+        border-radius: 10px;
+        display: none;
+        width: 100px;
+      }
+      
+      .audio-hover-area:hover .audio-slider-container {
+        display: block;
+      }
+      /* === PERBAIKAN CSS AUDIO CONTROLS SELESAI === */
+
+      .volume-slider {
+        width: 100%;
+        height: 3px;
+        cursor: pointer;
+        appearance: none;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 3px;
+      }
+
+      .volume-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+
+      .volume-slider::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+      }
+
+      .letter-container {
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.3s;
+        width: 500px;
+        height: 400px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+      }
+
+      .letter-container:hover {
+        transform: scale(1.02);
+      }
+
+      .letter {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        position: absolute;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      .letter.active {
+        opacity: 1;
+      }
+
+      .message {
+        position: absolute;
+        color: #4a0404;
+        font-size: 1.1rem;
+        text-align: center;
+        white-space: pre-line;
+        opacity: 0;
+        width: 70%;
+        max-width: 350px;
+        pointer-events: none;
+        padding: 15px;
+        box-sizing: border-box;
+        overflow: hidden;
+        word-wrap: break-word;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .floating-heart {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        pointer-events: none;
+        filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.5));
+        opacity: 0.8;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(100vh) scale(1) rotate(0deg);
+          filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+        }
+        50% {
+          filter: drop-shadow(0 0 20px rgba(255, 0, 0, 1));
+        }
+        100% {
+          transform: translateY(-280px) scale(1) rotate(360deg);
+          filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+        }
+      }
+
+      .button-container {
+        position: absolute;
+        bottom: 20px;
+        display: flex;
+        gap: 20px;
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      .button-container.visible {
+        opacity: 1;
+      }
+
+      .button {
+        padding: 10px 20px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: transform 0.3s;
+        margin-top: 30px;
+      }
+
+      .button.yes {
+        background-color: #ff4d4d;
+        color: white;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+
+      .button.yes:hover {
+        background-color: #ff1a1a;
+        transform: scale(1.1);
+      }
+
+      .button.yes:active {
+        background-color: #e60000;
+        transform: scale(0.9);
+      }
+
+      .button.no {
+        background-color: #ff4d4d;
+        color: white;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+
+      .button.no:hover {
+        background-color: #ff1a1a;
+        transform: scale(1.1);
+      }
+
+      .button.no:active {
+        background-color: #e60000;
+        transform: scale(0.9);
+      }
+
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s, visibility 0.5s;
+        z-index: 1000;
+      }
+
+      .overlay.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .romantic-image {
+        max-width: 80%;
+        max-height: 80%;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: opacity 0.5s, transform 0.5s;
+      }
+
+      .overlay.visible .romantic-image {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .close-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 30px;
+        height: 30px;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .close-button::before,
+      .close-button::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 2px;
+        background-color: white;
+      }
+
+      .close-button::before {
+        transform: rotate(45deg);
+      }
+
+      .close-button::after {
+        transform: rotate(-45deg);
+      }
+
+      .close-button:hover::before,
+      .close-button:hover::after {
+        background-color: #ff4d4d;
+      }
+
+      .slider-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s;
+      }
+
+      .slider-container.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .slide {
+        position: relative;
+        width: 50%;
+        height: 70vh;
+        background-color: #fff;
+        border: 15px solid transparent;
+        border-image: url("images/border.jpg") 30 round;
+        display: none;
+        flex-direction: column;
+        padding: 2rem;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      .slide.active {
+        display: flex;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .slide-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+      }
+
+      .gif-container {
+        width: 100%;
+        height: 40%;
+        min-height: 150px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .gif-container img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
+
+      .message-container {
+        width: 100%;
+        height: 40%;
+        min-height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 20px;
+      }
+
+      .slide .message {
+        width: 100%;
+        font-size: 1.2rem;
+        text-align: center;
+        color: #4a0404;
+        white-space: pre-line;
+        position: static;
+        transform: none;
+        opacity: 0;
+        margin-bottom: 40px;
+      }
+
+      .slide .button-container {
+        width: 100%;
+        height: 20%;
+        min-height: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: auto;
+      }
+
+      .slide button {
+        padding: 10px 20px;
+        margin-bottom: 0;
+        font-size: 1rem;
+        border: none;
+        border-radius: 5px;
+        background-color: #ff4d4d;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .slide button:hover {
+        background-color: #ff1a1a;
+        transform: scale(1.1);
+      }
+
+      @media screen and (max-width: 480px) {
+        .slide {
+          width: 95%;
+          padding: 1rem;
+        }
+
+        .gif-container {
+          height: 30%;
+          min-height: 100px;
+        }
+
+        .message-container {
+          height: 50%;
+          min-height: 70px;
+        }
+
+        .slide .message {
+          font-size: 1rem;
+        }
+
+        .button-container {
+          height: 20%;
+          min-height: 35px;
+        }
+      }
+
+      .slide-content {
+        opacity: 1;
+        transform: none;
+        animation: slideIn 0.5s ease-out forwards;
+      }
+
+      .evaluation-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1002;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.5s, visibility 0.5s;
+      }
+
+      .evaluation-container.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .evaluation-box {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        width: 80%;
+        max-width: 500px;
+      }
+
+      .evaluation-box h2 {
+        margin-bottom: 20px;
+      }
+
+      .evaluation-box input[type="range"] {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .evaluation-box p {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+      }
+
+      .evaluation-box button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 5px;
+        background-color: #ff4d4d;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+
+      .evaluation-box button:hover {
+        background-color: #ff1a1a;
+        transform: scale(1.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Updated Audio Control -->
+      <div class="audio-control">
+        <div class="audio-hover-area">
+          <img
+            src="assets/speaker.svg"
+            class="speaker-icon"
+            id="speaker-icon"
+            alt="Speaker"
+          />
+          <div class="audio-slider-container">
+            <input
+              type="range"
+              class="volume-slider"
+              id="volume-slider"
+              min="0"
+              max="100"
+              value="100"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Updated Audio Element with loop -->
+      <audio id="background-music" loop>
+        <source src="assets/valentine3.mp3" type="audio/mp3" />
+      </audio>
+
+      <!-- Letter -->
+      <div class="letter-container">
+        <img
+          src="assets/love-letter-hearts-closed.svg"
+          class="letter active"
+          id="closed-letter"
+          alt="Closed Letter"
+        />
+        <img
+          src="assets/love-letter-hearts-opened.svg"
+          class="letter"
+          id="opened-letter"
+          alt="Opened Letter"
+        />
+        <img
+          src="assets/love-letter-hearts.svg"
+          class="letter"
+          id="letter-content"
+          alt="Letter Content"
+        />
+        <div class="message" id="message">
+          Senyuman logo hino
+          memang lucu
+          tapi lebih lucu
+          senyuman kamu,
+          xixixi
+          btw,
+          
+          will u be my valentine?
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="button-container" id="button-container">
+        <button class="button yes" id="yes-button">Ya</button>
+        <button class="button no" id="no-button">Ga</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="overlay">
+      <button class="close-button" id="close-button"></button>
+    </div>
+
+    <script>
+      // Additional JavaScript for Slider and Evaluation
+      const sliderContainer = document.createElement("div");
+      sliderContainer.classList.add("slider-container");
+      document.body.appendChild(sliderContainer);
+
+      const slides = [
+        {
+          gif: "gifs/1.gif",
+          message: "Do you want to see something\nspecial just for you?",
+          buttonText: "Click here to see the secret!",
+          animationDelay: 500,
+        },
+        {
+          gif: "gifs/2.gif",
+          message: "Every time I look at you,\nmy heart skips a beat...",
+          buttonText: "Continue",
+          animationDelay: 500,
+        },
+        {
+          gif: "gifs/3.gif",
+          message: "Our love is a story\nthat I want to write forever...",
+          buttonText: "Next Chapter",
+          animationDelay: 500,
+        },
+        {
+          gif: "gifs/4.gif",
+          message: "In your arms, I find\nmy home, my peace, my love...",
+          buttonText: "Next",
+          animationDelay: 500,
+        },
+        {
+          gif: "gifs/5.gif",
+          message:
+            "Will you be my Valentine?\nAnd share this magical journey...",
+          buttonText: "Almost There!",
+          animationDelay: 500,
+        },
+        {
+          gif: "gifs/6.gif",
+          message: "A surprise awaits you...\nJust for being you!",
+          buttonText: "Take Reward",
+          animationDelay: 500,
+        },
+      ];
+
+      // Improved createSlide function
+      function createSlide(index) {
+        const slide = document.createElement("div");
+        slide.classList.add("slide");
+
+        // Set first slide as active
+        if (index === 0) {
+          slide.classList.add("active");
+        }
+
+        const slideContent = document.createElement("div");
+        slideContent.classList.add("slide-content");
+
+        // Create GIF container
+        const gifContainer = document.createElement("div");
+        gifContainer.classList.add("gif-container");
+        const img = document.createElement("img");
+        img.src = slides[index].gif;
+        gifContainer.appendChild(img);
+
+        // Create message container
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("message-container");
+        const message = document.createElement("div");
+        message.classList.add("message");
+        message.style.opacity = "0"; // Start with hidden message
+        messageContainer.appendChild(message);
+
+        // Create button container
+        const buttonContainer = document.createElement("div");
+        buttonContainer.classList.add("button-container");
+        buttonContainer.style.opacity = "0"; // Start with hidden button
+        const button = document.createElement("button");
+        button.textContent = slides[index].buttonText;
+        button.addEventListener("click", () => {
+          if (index === 5) {
+            showReward();
+          } else {
+            nextSlide();
+          }
+        });
+        buttonContainer.appendChild(button);
+
+        // Assemble slide
+        slideContent.appendChild(gifContainer);
+        slideContent.appendChild(messageContainer);
+        slideContent.appendChild(buttonContainer);
+        slide.appendChild(slideContent);
+        sliderContainer.appendChild(slide);
+
+        // If it's the active slide, start the animation sequence
+        if (slide.classList.contains("active")) {
+          startSlideAnimation(slide, index);
+        }
+      }
+
+      // New function to handle slide animation sequence
+      function startSlideAnimation(slide, index) {
+        const message = slide.querySelector(".message");
+        const buttonContainer = slide.querySelector(".button-container");
+
+        // Reset message and button state
+        message.textContent = "";
+        message.style.opacity = "0";
+        buttonContainer.style.opacity = "0";
+
+        // Start typing animation after delay
+        setTimeout(() => {
+          message.style.opacity = "1";
+          animateTyping(message, slides[index].message, () => {
+            // Show button after typing is complete
+            setTimeout(() => {
+              buttonContainer.style.opacity = "1";
+            }, 300);
+          });
+        }, slides[index].animationDelay);
+      }
+
+      // Improved animateTyping function with callback
+      function animateTyping(element, text, callback) {
+        element.textContent = "";
+        let i = 0;
+
+        function typeWriter() {
+          if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, 50);
+          } else if (callback) {
+            callback();
+          }
+        }
+
+        typeWriter();
+      }
+
+      // Improved nextSlide function
+      function nextSlide() {
+        const allSlides = document.querySelectorAll(".slide");
+        const currentSlide = document.querySelector(".slide.active");
+        const currentIndex = Array.from(allSlides).indexOf(currentSlide);
+
+        // Fade out current slide
+        gsap.to(currentSlide, {
+          opacity: 0,
+          scale: 0.8,
+          duration: 0.3,
+          onComplete: () => {
+            currentSlide.classList.remove("active");
+
+            // Setup next slide
+            const nextIndex = (currentIndex + 1) % allSlides.length;
+            const nextSlide = allSlides[nextIndex];
+            nextSlide.classList.add("active");
+
+            // Reset and show next slide
+            gsap.set(nextSlide, { opacity: 0, scale: 0.8 });
+            gsap.to(nextSlide, {
+              opacity: 1,
+              scale: 1,
+              duration: 0.3,
+              onComplete: () => {
+                startSlideAnimation(nextSlide, nextIndex);
+              },
+            });
+          },
+        });
+      }
+
+      // Improved showReward function
+      function showReward() {
+        const reward = document.createElement("div");
+        reward.classList.add("slide", "active");
+
+        reward.innerHTML = `
+        <div class="slide-content">
+            <div class="gif-container">
+                <img src="gifs/reward.gif" alt="Reward">
+            </div>
+            <div class="message-container">
+                <div class="message" style="opacity: 0;"></div>
+            </div>
+            <div class="button-container" style="opacity: 0;">
+                <button id="close-reward">Close</button>
+            </div>
+        </div>
+    `;
+
+        sliderContainer.innerHTML = "";
+        sliderContainer.appendChild(reward);
+
+        const message = reward.querySelector(".message");
+        const buttonContainer = reward.querySelector(".button-container");
+
+        // Start reward animation sequence
+        setTimeout(() => {
+          message.style.opacity = "1";
+          animateTyping(message, "Here's your reward!", () => {
+            setTimeout(() => {
+              buttonContainer.style.opacity = "1";
+            }, 300);
+          });
+        }, 500);
+
+        const closeButton = document.getElementById("close-reward");
+        closeButton.addEventListener("click", () => {
+          sliderContainer.classList.remove("visible");
+          showEvaluation();
+        });
+
+        // Auto-close after 15 seconds
+        setTimeout(() => {
+          if (sliderContainer.classList.contains("visible")) {
+            sliderContainer.classList.remove("visible");
+            showEvaluation();
+          }
+        }, 15000);
+      }
+
+      function showEvaluation() {
+        const evaluationContainer = document.createElement("div");
+        evaluationContainer.classList.add("evaluation-container", "visible");
+        evaluationContainer.innerHTML = `
+      <div class="evaluation-box">
+        <h2>Did you like this?</h2>
+        <input type="range" min="0" max="100" value="50" class="evaluation-slider">
+        <p>Let me know...</p>
+        <button id="submit-evaluation">Submit</button>
+      </div>
+    `;
+        document.body.appendChild(evaluationContainer);
+
+        const slider = document.querySelector(".evaluation-slider");
+        const message = document.querySelector(".evaluation-box p");
+        const submitButton = document.getElementById("submit-evaluation");
+
+        slider.addEventListener("input", () => {
+          const value = slider.value;
+          if (value >= 0 && value <= 20) {
+            message.textContent = "Oh no! What went wrong?";
+          } else if (value >= 21 && value <= 50) {
+            message.textContent = "Hmm, not bad but could be better.";
+          } else if (value >= 51 && value <= 80) {
+            message.textContent = "Nice! I’m glad you liked it!";
+          } else if (value >= 81 && value <= 100) {
+            message.textContent = "Wow! You really loved it!";
+          }
+        });
+
+        submitButton.addEventListener("click", () => {
+          window.location.href = "valentine2.html";
+        });
+      }
+      // Audio Control
+      const audio = document.getElementById("background-music");
+      const speakerIcon = document.getElementById("speaker-icon");
+      const volumeSlider = document.getElementById("volume-slider");
+      let isPlaying = true;
+
+      // Start playing music when page loads
+      window.addEventListener("load", () => {
+        audio.play().catch((error) => {
+          console.log("Audio autoplay failed:", error);
+        });
+      });
+
+      speakerIcon.addEventListener("click", () => {
+        if (isPlaying) {
+          audio.pause();
+          speakerIcon.src = "assets/speaker-cross.svg";
+          volumeSlider.value = 0;
+        } else {
+          audio.play();
+          speakerIcon.src = "assets/speaker.svg";
+          volumeSlider.value = 100;
+          audio.volume = 1;
+        }
+        isPlaying = !isPlaying;
+      });
+
+      volumeSlider.addEventListener("input", (e) => {
+        const value = e.target.value;
+        audio.volume = value / 100;
+
+        if (value == 0) {
+          speakerIcon.src = "assets/speaker-cross.svg";
+          isPlaying = false;
+          audio.pause();
+        } else {
+          speakerIcon.src = "assets/speaker.svg";
+          isPlaying = true;
+          audio.play();
+        }
+      });
+
+      // No Button Logic
+      const noButton = document.getElementById("no-button");
+      const container = document.querySelector(".container");
+
+      function moveButton(e) {
+        const buttonRect = noButton.getBoundingClientRect();
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        // Calculate distance between mouse and button center
+        const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+        const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+        const distance = Math.sqrt(
+          Math.pow(mouseX - buttonCenterX, 2) +
+            Math.pow(mouseY - buttonCenterY, 2)
+        );
+
+        // If mouse is within 100px of button, move it
+        if (distance < 100) {
+          const x = Math.random() * (window.innerWidth - buttonRect.width);
+          const y = Math.random() * (window.innerHeight - buttonRect.height);
+          noButton.style.position = "fixed";
+          noButton.style.left = `${x}px`;
+          noButton.style.top = `${y}px`;
+        }
+      }
+
+      document.addEventListener("mousemove", moveButton);
+
+      // Create floating hearts
+      function createFloatingHearts() {
+        const numberOfHearts = 20;
+
+        for (let i = 0; i < numberOfHearts; i++) {
+          const heart = document.createElement("img");
+          heart.src = "assets/heart.svg";
+          heart.classList.add("floating-heart");
+          heart.style.left = `${Math.random() * 100}vw`;
+          const duration = 10 + Math.random() * 10;
+          heart.style.animation = `float ${duration}s linear infinite`;
+          heart.style.animationDelay = `${Math.random() * 10}s`;
+          container.appendChild(heart);
+        }
+      }
+
+      // Letter state management
+      let letterState = "closed";
+      const closedLetter = document.getElementById("closed-letter");
+      const openedLetter = document.getElementById("opened-letter");
+      const letterContent = document.getElementById("letter-content");
+      const message = document.getElementById("message");
+      const buttonContainer = document.getElementById("button-container");
+
+      function handleLetterClick() {
+        switch (letterState) {
+          case "closed":
+            closedLetter.classList.remove("active");
+            openedLetter.classList.add("active");
+            letterState = "opened";
+            break;
+          case "opened":
+            openedLetter.classList.remove("active");
+            letterContent.classList.add("active");
+            letterState = "content";
+            animateMessage();
+            break;
+        }
+      }
+
+      function animateMessage() {
+        const text = message.textContent;
+        message.textContent = "";
+        message.style.opacity = "1";
+
+        let i = 0;
+        function typeWriter() {
+          if (i < text.length) {
+            message.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, 50);
+          } else {
+            buttonContainer.classList.add("visible");
+          }
+        }
+
+        setTimeout(typeWriter, 500);
+      }
+
+      const yesButton = document.getElementById("yes-button");
+      const overlay = document.getElementById("overlay");
+      const closeButton = document.getElementById("close-button");
+
+      yesButton.addEventListener("click", () => {
+        sliderContainer.classList.add("visible");
+        slides.forEach((_, index) => createSlide(index));
+      });
+
+      closeButton.addEventListener("click", () => {
+        overlay.classList.remove("visible");
+      });
+
+      document
+        .querySelector(".letter-container")
+        .addEventListener("click", handleLetterClick);
+      createFloatingHearts();
+    </script>
+  </body>
+</html>
